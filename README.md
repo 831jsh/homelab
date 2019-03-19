@@ -12,6 +12,8 @@ So... This is *my* adapted approach towards managing my own personal homelab.
 
 ## Overview
 
-Here is a diagram of what my homelab infrastructure looks like at the moment.
+Here is a diagram of what my homelab infrastructure looks like at the moment:
 
 ![Infrastructure Diagram](./documentation/images/homelab-architecture.svg)
+
+
