@@ -69,16 +69,14 @@ Here are some links to the various cloud pricings available:
 
 It's really hard to compare apples-to-apples because cloud providers don't sell similar setups; they are either cpu-focused or memory-focused and no matter how you slice it; you'll be short memory or over on cpus. That said, you can kind of draw the conclusion (from reviewing the pricing sheets), that I'm potentially saving on a few hundred dollars a month.
 
-### Monthly cost comparison
+### Cost Comparisons
+
+#### Monthly
 
 ![Monthly cost comparison](./documentation/images/monthly-cost-comparison.png)
 
-This diagram shows the estimated cost comparison on a monthly basis.
-
-### Yearly cost comparison
+#### Yearly
 
 ![Yearly cost comparison](./documentation/images/yearly-cost-comparison.png)
-
-This diagram shows the estimated cost comparison on a yearly basis.
 
 **Something to note:** My servers originally cost ~$2200; after just 8 months of hosting in the cloud, these servers would have paid for themselves.
