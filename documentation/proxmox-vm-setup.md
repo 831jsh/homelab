@@ -8,6 +8,14 @@ I spent a great deal of time researching the best way to add support for Terrafo
 
 Terraform and Packer aside, I'm still going to do the least amount of non-code-reproducible work as possible; I'll be using [Ansible](https://ansible.com) to provision all of the VMs and perform regular maintenance to them.
 
+## Overview
+
+Here's a diagram that attempts to portray what the architecture of VMs will look like after setting everything up:
+
+![Proxmox VM Architecture](./images/proxmox-vm-architecture.svg)
+
+Note: the blue lines indicate that the IP addresses are using the same private subnet.
+
 ## VM Resource Allocation
 
 Proxmox itself has a set of hardware requirements to follow (which can be found [here](https://www.proxmox.com/en/proxmox-ve/requirements)). Below, I've organized the resource utilizations for each node (so I don't exceed quota).
