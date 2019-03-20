@@ -130,7 +130,7 @@ Choose `Manual` to statically define this VMs IP configuration; press `Enter` to
 
 ![Step 04c](./images/proxmox-ubuntu-boot-04c.png)
 
-Fill out the static IP configuration for this VM. It's important to note that the `Subnet` input requires a CIDR block notation `192.168.1.1/24` as opposed to the standard subnet mask notation `255.255.255.0`
+Fill out the static IP configuration for this VM. It's important to note that the `Subnet` input requires a CIDR block notation `192.168.13.1/24` as opposed to the standard subnet mask notation `255.255.255.0`
 
 ![Step 05](./images/proxmox-ubuntu-boot-05.png)
 
