@@ -10,7 +10,7 @@ Terraform and Packer aside, I'm still going to do the least amount of non-code-r
 
 ## Overview
 
-Here's a diagram that attempts to portray what the architecture of VMs will look like after setting everything up:
+Here's a diagram that attempts to portray what the architecture of the VMs will look like after setting everything up:
 
 ![Proxmox VM Architecture](./images/proxmox-vm-architecture.svg)
 
