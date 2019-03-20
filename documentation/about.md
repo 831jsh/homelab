@@ -45,7 +45,7 @@ Awhile ago, I did work for a customer of mine who agreed to host my servers for 
 
 ### Cloud-hosted Alternatives
 
-With the hardware listed above, I have the following cloud-relevant compute:
+With the hardware listed above, I have the following compute:
 
 * 1 load balancer
 * 430GB RAM
