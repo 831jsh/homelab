@@ -1,0 +1,13 @@
+---
+- name: Add the Kubernetes apt repo key
+  apt_key:
+    url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
+
+- name: Remove the existing Kubernetes apt repo (in case it's incorrect)
+  file:
+    path: /etc/apt/sources.list.d/apt_kubernetes_io.list
+    state: absent
+
+- name: Add the Kubernetes apt repo
+  apt_repository:
+    repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"

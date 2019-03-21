@@ -6,6 +6,13 @@
     path: /usr/local/bin/containerd
   register: containerd_binary
 
+- name: Check containerd version (if it's installed)
+  command: "/usr/local/bin/containerd --version"
+  register: containerd_version
+  when: containerd_binary.stat.exists
+  changed_when: False
+  failed_when: False
+
 - name: Install prerequisites for containerd
   apt:
     name: "{{ packages }}"
@@ -16,11 +23,18 @@
     packages:
     - libseccomp2
 
+- name: Stop containerd from running (if version is incorrect)
+  systemd:
+    state: started
+    name: containerd
+  when: containerd_binary.stat.exists and containerd.version not in containerd_version.stdout
+
 - name: Download containerd tarball
   get_url:
     url: "https://storage.googleapis.com/cri-containerd-release/cri-containerd-{{ containerd.version }}.{{ containerd.os }}-{{ containerd.arch }}.tar.gz"
     dest: /tmp
-  when: containerd_binary.stat.exists == False
+    force: yes
+  when: not containerd_binary.stat.exists or containerd.version not in containerd_version.stdout
 
 - name: Unarchive the containerd tarball
   unarchive:
@@ -29,9 +43,9 @@
     dest: /
     extra_opts:
     - --no-overwrite-dir
-  when: containerd_binary.stat.exists == False
+  when: not containerd_binary.stat.exists or containerd.version not in containerd_version.stdout
 
-- name: Make sure containerd is running now
+- name: Make sure containerd is running
   systemd:
     state: started
     name: containerd

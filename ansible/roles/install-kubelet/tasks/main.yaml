@@ -1,0 +1,44 @@
+---
+- name: Determine whether kubelet needs to be installed or not
+  stat:
+    path: /usr/bin/kubelet
+  register: kubelet_binary
+
+- name: Check the kubelet version (if it's installed)
+  command: "apt-cache policy kubelet"
+  register: kubelet_version
+  when: kubelet_binary.stat.exists
+  changed_when: False
+  failed_when: False
+
+- name: Ensure the kubelet is not running before we make any changes to the package
+  systemd:
+    name: kubelet
+    state: stopped
+    daemon_reload: true
+    enabled: true
+  vars:
+    search_string: "Installed: {{ kubernetes.version }}-00"
+  when: kubelet_binary.stat.exists and kubelet_version.stdout is not search(search_string)
+
+- name: Unlock the kubelet package
+  dpkg_selections:
+    name: kubelet
+    selection: install
+  vars:
+    search_string: "Installed: {{ kubernetes.version }}-00"
+  when: kubelet_binary.stat.exists and kubelet_version.stdout is not search(search_string)
+
+- name: Install the kubelet package
+  apt:
+    name: "kubelet={{ kubernetes.version }}-00"
+    force: yes
+    update_cache: yes
+  vars:
+    search_string: "Installed: {{ kubernetes.version }}-00"
+  when: not kubelet_binary.stat.exists or kubelet_version.stdout is not search(search_string)
+
+- name: Lock the kubelet package at its specified version
+  dpkg_selections:
+    name: kubelet
+    selection: hold

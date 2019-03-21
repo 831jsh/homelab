@@ -1,0 +1,34 @@
+---
+- name: Determine whether kubeadm needs to be installed or not
+  stat:
+    path: /usr/bin/kubeadm
+  register: kubeadm_binary
+
+- name: Check the kubeadm version (if it's installed)
+  command: "apt-cache policy kubeadm"
+  register: kubeadm_version
+  when: kubeadm_binary.stat.exists
+  changed_when: False
+  failed_when: False
+
+- name: Unlock the kubeadm package
+  dpkg_selections:
+    name: kubeadm
+    selection: install
+  vars:
+    search_string: "Installed: {{ kubeadm.version }}-00"
+  when: kubeadm_binary.stat.exists and kubeadm_version.stdout is not search(search_string)
+
+- name: Install the kubeadm package
+  apt:
+    name: "kubeadm={{ kubeadm.version }}-00"
+    force: yes
+    update_cache: yes
+  vars:
+    search_string: "Installed: {{ kubeadm.version }}-00"
+  when: not kubeadm_binary.stat.exists or kubeadm_version.stdout is not search(search_string)
+
+- name: Lock the kubeadm package at its specified version
+  dpkg_selections:
+    name: kubeadm
+    selection: hold

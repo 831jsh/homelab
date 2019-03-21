@@ -16,7 +16,7 @@
   - upgrade-os
 
 - hosts: all
-  gather_facts: false
+  gather_facts: true
   become: yes
   roles:
   - remove-snap
@@ -25,3 +25,13 @@
   - enable-masquerading
   - install-common-packages
   - install-containerd
+  - add-kubernetes-repo
+  - install-kubelet
+  - install-kubeadm
+  - install-kubernetes-cni
+
+- hosts: masters
+  gather_facts: true
+  become: yes
+  roles:
+  - install-kubectl

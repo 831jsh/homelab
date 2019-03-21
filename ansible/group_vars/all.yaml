@@ -1,6 +1,14 @@
 ---
 networkInterface: "ens18"
 containerd:
-  version: "1.2.4"
+  version: "1.2.5"
   os: "linux"
   arch: "amd64"
+kubernetes:
+  version: "1.13.4"
+  cni:
+    version: "0.6.0"
+kubeadm:
+  version: "1.13.4"
+kubectl:
+  version: "1.13.4"
