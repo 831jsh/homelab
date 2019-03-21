@@ -29,21 +29,22 @@
     name: containerd
   when: containerd_binary.stat.exists and containerd.version not in containerd_version.stdout
 
-- name: Download containerd tarball
-  get_url:
-    url: "https://storage.googleapis.com/cri-containerd-release/cri-containerd-{{ containerd.version }}.{{ containerd.os }}-{{ containerd.arch }}.tar.gz"
-    dest: /tmp
-    force: yes
-  when: not containerd_binary.stat.exists or containerd.version not in containerd_version.stdout
-
 - name: Unarchive the containerd tarball
   unarchive:
     remote_src: yes
-    src: "/tmp/cri-containerd-{{ containerd.version }}.{{ containerd.os }}-{{ containerd.arch }}.tar.gz"
+    src: "https://storage.googleapis.com/cri-containerd-release/cri-containerd-{{ containerd.version }}.{{ containerd.os }}-{{ containerd.arch }}.tar.gz"
     dest: /
-    extra_opts:
-    - --no-overwrite-dir
   when: not containerd_binary.stat.exists or containerd.version not in containerd_version.stdout
+
+- name: Create a directory for cni binary
+  file:
+    path: "{{ kubernetes.cni.bin_directory }}"
+    state: directory
+
+- name: Create a directory for cni config files
+  file:
+    path: "{{ kubernetes.cni.conf_directory }}"
+    state: directory
 
 - name: Make sure containerd is running
   systemd:

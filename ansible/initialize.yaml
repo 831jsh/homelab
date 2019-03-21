@@ -8,30 +8,40 @@
     register: output
     changed_when: output.stdout != ""
 
-- hosts: all
-  gather_facts: false
-  serial: true
-  become: yes
-  roles:
-  - upgrade-os
+# - hosts: all
+#   serial: true
+#   become: yes
+#   roles:
+#   - upgrade-os
 
 - hosts: all
-  gather_facts: true
   become: yes
   roles:
-  - remove-snap
-  - disable-swap
-  - enable-ipv4-forwarding
-  - enable-masquerading
-  - install-common-packages
-  - install-containerd
-  - add-kubernetes-repo
-  - install-kubernetes-cni
-  - install-kubelet
-  - install-kubeadm
+#   - remove-snap
+#   - disable-swap
+#   - enable-ipv4-forwarding
+#   - enable-masquerading
+#   - install-common-packages
+#   - set-bridge-nf-call-iptables
+#   - install-containerd
+#   - add-kubernetes-repo
+#   - install-kubernetes-cni
+#   - install-kubelet
+#   - install-kubeadm
 
 - hosts: masters
-  gather_facts: true
   become: yes
   roles:
-  - install-kubectl
+  # - install-kubectl
+  - setup-kubeadm-config
+  - setup-kubeadm-masters
+
+# - hosts: workers
+#   become: yes
+#   roles:
+#   - setup-kubeadm-workers
+
+# - hosts: masters
+#   become: yes
+#   roles:
+#   - install-calico

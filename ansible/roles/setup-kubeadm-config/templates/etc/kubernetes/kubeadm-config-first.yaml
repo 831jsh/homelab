@@ -1,0 +1,34 @@
+---
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: "{{ ansible_default_ipv4.address }}"
+nodeRegistration:
+  name: "{{ hostvars[inventory_hostname]['ansible_hostname'] }}"
+  criSocket: /var/run/containerd/containerd.sock
+---
+apiVersion: kubeadm.k8s.io/v1beta1
+kind: ClusterConfiguration
+apiServer:
+  certSANs:
+  - "{{ kubernetes.apiServer.loadBalancer.ip }}"
+  extraArgs:
+    anonymous-auth: "false"
+    audit-log-path: "{{ kubernetes.auditPolicy.logDir }}/audit.log"
+    audit-log-maxage: "{{ kubernetes.auditPolicy.logMaxAge }}"
+controlPlaneEndpoint: "{{ kubernetes.apiServer.loadBalancer.ip }}:6443"
+kubernetesVersion: "v{{ kubernetes.version }}"
+networking:
+  dnsDomain: "{{ kubernetes.network.dns.domain }}"
+  podSubnet: "{{ kubernetes.network.pods.cidr }}"
+  serviceSubnet: "{{ kubernetes.network.services.cidr }}"
+---
+apiVersion: kubeproxy.config.k8s.io/v1alpha1
+kind: KubeProxyConfiguration
+clusterCIDR: "{{ kubernetes.network.pods.cidr }}"
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+clusterDNS:
+- "{{ kubernetes.network.dns.serviceIP }}"
+clusterDomain: "{{ kubernetes.network.dns.domain }}"

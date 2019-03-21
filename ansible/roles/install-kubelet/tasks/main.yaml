@@ -18,7 +18,7 @@
     daemon_reload: true
     enabled: true
   vars:
-    search_string: "Installed: {{ kubernetes.version }}-00"
+    search_string: "Installed: {{ kubelet.version }}-00"
   when: kubelet_binary.stat.exists and kubelet_version.stdout is not search(search_string)
 
 - name: Unlock the kubelet package
@@ -26,17 +26,24 @@
     name: kubelet
     selection: install
   vars:
-    search_string: "Installed: {{ kubernetes.version }}-00"
+    search_string: "Installed: {{ kubelet.version }}-00"
   when: kubelet_binary.stat.exists and kubelet_version.stdout is not search(search_string)
 
 - name: Install the kubelet package
   apt:
-    name: "kubelet={{ kubernetes.version }}-00"
+    name: "kubelet={{ kubelet.version }}-00"
     force: yes
     update_cache: yes
   vars:
-    search_string: "Installed: {{ kubernetes.version }}-00"
+    search_string: "Installed: {{ kubelet.version }}-00"
   when: not kubelet_binary.stat.exists or kubelet_version.stdout is not search(search_string)
+
+- name: Add the kubelet configuration for containerd
+  template:
+    src: etc/systemd/system/kubelet.service.d/0-containerd.conf
+    dest: /etc/systemd/system/kubelet.service.d/0-containerd.conf
+    owner: root
+    group: root
 
 - name: Lock the kubelet package at its specified version
   dpkg_selections:

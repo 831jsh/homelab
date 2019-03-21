@@ -6,9 +6,39 @@ containerd:
   arch: "amd64"
 kubernetes:
   version: "1.13.4"
+  auditPolicy:
+    logDir: "/var/log/kubernetes/audit"
+    logMaxAge: 2
+  apiServer:
+    loadBalancer:
+      ip: "192.168.13.1"
+      port: 6443
   cni:
     version: "0.6.0"
+    bin_directory: "/opt/cni/bin/"
+    conf_directory: "/etc/cni/net.d/"
+  network:
+    dns:
+      domain: "cluster.local"
+      serviceIP: "10.32.0.10"
+    pods:
+      cidr: "10.200.0.0/16"
+    services:
+      cidr: "10.32.0.0/24"
+calico:
+  installationURLs:
+    rbac: "https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/rbac-kdd.yaml"
+    deployment: "https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml"
+  datastoreType: "kubernetes"
+  metricsEnabled: true
+kubelet:
+  version: "1.13.4"
 kubeadm:
   version: "1.13.4"
+  token:
+    value: "ee99fa.4fd6d8638c0e21bd"
+    ttl: "0s"
 kubectl:
   version: "1.13.4"
+etcd:
+  cluster_token: "444fddcc-beae-45bc-9da6-d941d446b595"

@@ -1,0 +1,70 @@
+---
+- name: Determine whether kubeadm needs to be run
+  stat:
+    path: /etc/kubernetes/manifests/kube-apiserver.yaml
+  register: kubeadm_apiserver_manifest
+
+- name: Ensure that the kubelet is running
+  systemd:
+    name: kubelet
+    state: restarted
+    daemon_reload: true
+    enabled: true
+
+- name: Run kubeadm init on primary master
+  shell: "/usr/bin/kubeadm init --config=/etc/kubernetes/kubeadm-config.yaml --ignore-preflight-errors=all --cri-socket=/var/run/containerd/containerd.sock"
+  delegate_to: "{{ ansible_play_hosts | first }}"
+  run_once: true
+  when: not kubeadm_apiserver_manifest.stat.exists and inventory_hostname == ansible_play_hosts | first
+
+- name: Slurp the ca certificate and key
+  slurp:
+    src: "/etc/kubernetes/{{ item }}"
+  with_items:
+  - pki/ca.crt
+  - pki/ca.key
+  - pki/sa.key
+  - pki/sa.pub
+  - pki/front-proxy-ca.crt
+  - pki/front-proxy-ca.key
+  - pki/etcd/ca.crt
+  - pki/etcd/ca.key
+  - admin.conf
+  register: kube_pki
+  when: inventory_hostname == ansible_play_hosts | first
+  run_once: true
+
+- name: Make sure the /etc/kubernetes/pki/etcd folder exists
+  file:
+    path: /etc/kubernetes/pki/etcd
+    state: directory
+
+- name: Add kube pki assets
+  no_log: True
+  copy:
+    dest: "{{ item.source }}"
+    content: "{{ item.content | b64decode }}"
+    owner: root
+    group: root
+    mode: 0700
+  with_items: "{{ hostvars[ansible_play_hosts | first].kube_pki.results }}"
+  when: inventory_hostname != ansible_play_hosts | first
+
+# - name: Run kubeadm join on other masters
+#   shell: "/usr/bin/kubeadm join {{ kubernetes.apiServer.loadBalancer.ip }}:6443 --config=/etc/kubernetes/kubeadm-config.yaml --ignore-preflight-errors=all"
+#   when: inventory_hostname != ansible_play_hosts | first
+
+# - name: Create kubernetes config directory
+#   file:
+#     dest: "/root/.kube/"
+#     state: directory
+#     mode: 0600
+
+# - name: Copy kubernetes config to home directory
+#   command: "cp /etc/kubernetes/admin.conf /root/.kube/config"
+
+# - name: Set config permissions
+#   file:
+#     dest: "/root/.kube/config"
+#     mode: 0600
+#     state: file

@@ -10,3 +10,10 @@
     - apt-transport-https
     - jq
     - nfs-common
+    - unzip
+    - tar
+    - btrfs-tools
+    - libseccomp2
+    - socat
+    - util-linux
+    - bridge-utils
