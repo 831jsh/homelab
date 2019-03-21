@@ -1,0 +1,6 @@
+---
+- name: Remove snap and purge any configs associated to it
+  apt:
+    name: snapd
+    autoremove: yes
+    purge: yes

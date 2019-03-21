@@ -1,0 +1,22 @@
+---
+- name: configure masquerading
+  become: yes
+  iptables:
+    table: nat
+    chain: POSTROUTING
+    out_interface: "{{ networkInterface }}"
+    jump: MASQUERADE
+
+- name: make masquerading permanent
+  become: yes
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  apt:
+    name: iptables-persistent
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: save current iptables
+  become: yes
+  shell: netfilter-persistent save

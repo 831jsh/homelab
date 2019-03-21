@@ -14,3 +14,12 @@
   become: yes
   roles:
   - upgrade-os
+
+- hosts: all
+  gather_facts: false
+  become: yes
+  roles:
+  - remove-snap
+  - disable-swap
+  - enable-ipv4-forwarding
+  - enable-masquerading

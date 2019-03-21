@@ -1,0 +1,30 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Upgrade packages (with aptitude safe-upgrade)
+  apt:
+    upgrade: yes
+
+- name: Check if a reboot is required after upgrade
+  register: reboot_required_file
+  stat:
+    path: /var/run/reboot-required
+    get_md5: no
+
+- name: Restart virtual machine
+  shell: sleep 2 && shutdown -r now "Ansible updates triggered"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  when: reboot_required_file.stat.exists == true
+
+- name: Waiting for virtual machine to boot back up
+  become: no
+  local_action: wait_for
+    port=22
+    host={{ inventory_hostname }}
+    search_regex=OpenSSH
+    delay=10
+  when: reboot_required_file.stat.exists == true
