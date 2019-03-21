@@ -26,9 +26,9 @@
   - install-common-packages
   - install-containerd
   - add-kubernetes-repo
+  - install-kubernetes-cni
   - install-kubelet
   - install-kubeadm
-  - install-kubernetes-cni
 
 - hosts: masters
   gather_facts: true

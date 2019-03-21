@@ -42,3 +42,10 @@
   dpkg_selections:
     name: kubelet
     selection: hold
+
+- name: Ensure the kubelet is running
+  systemd:
+    name: kubelet
+    state: started
+    daemon_reload: true
+    enabled: true
