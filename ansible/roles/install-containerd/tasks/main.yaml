@@ -1,0 +1,37 @@
+---
+# Installation based on: https://github.com/containerd/cri/blob/master/docs/installation.md
+
+- name: Determine whether containerd needs to be installed
+  stat:
+    path: /usr/local/bin/containerd
+  register: containerd_binary
+
+- name: Install prerequisites for containerd
+  apt:
+    name: "{{ packages }}"
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+  vars:
+    packages:
+    - libseccomp2
+
+- name: Download containerd tarball
+  get_url:
+    url: "https://storage.googleapis.com/cri-containerd-release/cri-containerd-{{ containerd.version }}.{{ containerd.os }}-{{ containerd.arch }}.tar.gz"
+    dest: /tmp
+  when: containerd_binary.stat.exists == False
+
+- name: Unarchive the containerd tarball
+  unarchive:
+    remote_src: yes
+    src: "/tmp/cri-containerd-{{ containerd.version }}.{{ containerd.os }}-{{ containerd.arch }}.tar.gz"
+    dest: /
+    extra_opts:
+    - --no-overwrite-dir
+  when: containerd_binary.stat.exists == False
+
+- name: Make sure containerd is running now
+  systemd:
+    state: started
+    name: containerd

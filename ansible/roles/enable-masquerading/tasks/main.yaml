@@ -1,5 +1,5 @@
 ---
-- name: configure masquerading
+- name: Configure masquerading
   become: yes
   iptables:
     table: nat
@@ -7,7 +7,7 @@
     out_interface: "{{ networkInterface }}"
     jump: MASQUERADE
 
-- name: make masquerading permanent
+- name:  Make masquerading permanent
   become: yes
   environment:
     DEBIAN_FRONTEND: noninteractive
@@ -17,6 +17,6 @@
     update_cache: yes
     cache_valid_time: 3600
 
-- name: save current iptables
+- name: Save current iptables
   become: yes
   shell: netfilter-persistent save

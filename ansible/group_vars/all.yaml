@@ -1,2 +1,6 @@
 ---
 networkInterface: "ens18"
+containerd:
+  version: "1.2.4"
+  os: "linux"
+  arch: "amd64"

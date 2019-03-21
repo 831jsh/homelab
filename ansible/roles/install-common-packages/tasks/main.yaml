@@ -1,0 +1,12 @@
+---
+- name: Install common packages
+  apt:
+    name: "{{ packages }}"
+    state: latest
+    update_cache: yes
+    cache_valid_time: 3600
+  vars:
+    packages:
+    - apt-transport-https
+    - jq
+    - nfs-common

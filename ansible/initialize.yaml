@@ -3,7 +3,7 @@
   gather_facts: false
   become: yes
   pre_tasks:
-  - name: install python and python-pip for ansible access
+  - name: Install python and python-pip for ansible access
     raw: bash -c "test -e /usr/bin/python || (apt -qqy update && apt install -qqy python python-pip)"
     register: output
     changed_when: output.stdout != ""
@@ -23,3 +23,5 @@
   - disable-swap
   - enable-ipv4-forwarding
   - enable-masquerading
+  - install-common-packages
+  - install-containerd
