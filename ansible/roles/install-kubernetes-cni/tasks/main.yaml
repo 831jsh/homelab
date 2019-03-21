@@ -32,3 +32,13 @@
   dpkg_selections:
     name: kubernetes-cni
     selection: hold
+
+- name: Ensure the configuration directory exists
+  file:
+    path: "{{ kubernetes.cni.paths.conf }}"
+    state: directory
+
+- name: Ensure the bin directory exists
+  file:
+    path: "{{ kubernetes.cni.paths.bin }}"
+    state: directory

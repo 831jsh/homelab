@@ -5,7 +5,7 @@ program_name=$(basename $0)
 ansible=$(which ansible-playbook)
 pwd=$(pwd)
 ansible_base="${pwd}/ansible"
-inventory_file="${ansible_base}/inventory/hosts"
+inventory_file="${ansible_base}/inventory/all.yaml"
 
 # functions
 sub_help(){

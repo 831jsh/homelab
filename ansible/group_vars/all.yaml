@@ -1,9 +1,12 @@
 ---
-networkInterface: "ens18"
+networkInterface: ens18
 containerd:
   version: "1.2.5"
-  os: "linux"
-  arch: "amd64"
+  os: linux
+  arch: amd64
+  socket_path: /var/run/containerd/containerd.sock
+  paths:
+    conf: /etc/containerd
 kubernetes:
   version: "1.13.4"
   auditPolicy:
@@ -15,8 +18,9 @@ kubernetes:
       port: 6443
   cni:
     version: "0.6.0"
-    bin_directory: "/opt/cni/bin/"
-    conf_directory: "/etc/cni/net.d/"
+    paths:
+      conf: /etc/cni/net.d
+      bin: /opt/cni/bin
   dns:
     type: CoreDNS
     image:

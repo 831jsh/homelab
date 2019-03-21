@@ -3,29 +3,32 @@ apiVersion: kubeadm.k8s.io/v1beta1
 kind: InitConfiguration
 localAPIEndpoint:
   advertiseAddress: "{{ ansible_default_ipv4.address }}"
+  bindPort: 6443
 nodeRegistration:
   name: "{{ hostvars[inventory_hostname]['ansible_hostname'] }}"
-  criSocket: unix:///var/run/containerd/containerd.sock
+  criSocket: "unix://{{ containerd.socket_path }}"
 ---
 apiVersion: kubeadm.k8s.io/v1beta1
 kind: ClusterConfiguration
 apiServer:
-  certSANs:
-  - "{{ kubernetes.apiServer.loadBalancer.ip }}"
   extraArgs:
     anonymous-auth: "false"
     audit-log-path: "{{ kubernetes.auditPolicy.logDir }}/audit.log"
     audit-log-maxage: "{{ kubernetes.auditPolicy.logMaxAge }}"
+certificatesDir: /etc/kubernetes/pki
 controlPlaneEndpoint: "{{ kubernetes.apiServer.loadBalancer.ip }}:6443"
+dns:
+  type: "{{ kubernetes.dns.type }}"
+  imageRepository: "{{ kubernetes.dns.image.repo }}"
+  imageTag: "{{ kubernetes.dns.image.tag }}"
+etcd:
+  local:
+    dataDir: /var/lib/etcd
 kubernetesVersion: "v{{ kubernetes.version }}"
 networking:
   dnsDomain: "{{ kubernetes.network.dns.domain }}"
   podSubnet: "{{ kubernetes.network.pods.cidr }}"
   serviceSubnet: "{{ kubernetes.network.services.cidr }}"
-dns:
-  type: "{{ kubernetes.dns.type }}"
-  imageRepository: "{{ kubernetes.dns.image.repo }}"
-  imageTag: "{{ kubernetes.dns.image.tag }}"
 ---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration

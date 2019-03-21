@@ -14,9 +14,9 @@
 #   roles:
 #   - upgrade-os
 
-- hosts: all
-  become: yes
-  roles:
+# - hosts: all
+#   become: yes
+#   roles:
 #   - remove-snap
 #   - disable-swap
 #   - enable-ipv4-forwarding
@@ -28,20 +28,10 @@
 #   - install-kubernetes-cni
 #   - install-kubelet
 #   - install-kubeadm
+#   - setup-kubernetes-modules
 
 - hosts: masters
   become: yes
   roles:
   # - install-kubectl
-  - setup-kubeadm-config
   - setup-kubeadm-masters
-
-# - hosts: workers
-#   become: yes
-#   roles:
-#   - setup-kubeadm-workers
-
-# - hosts: masters
-#   become: yes
-#   roles:
-#   - install-calico

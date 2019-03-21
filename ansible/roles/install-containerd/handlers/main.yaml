@@ -1,0 +1,6 @@
+---
+- name: service.containerd
+  systemd:
+    name: containerd
+    state: restarted
+    daemon_reload: yes

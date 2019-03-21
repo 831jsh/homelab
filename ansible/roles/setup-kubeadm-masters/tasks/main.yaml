@@ -1,70 +1,174 @@
 ---
-- name: Determine whether kubeadm needs to be run
-  stat:
-    path: /etc/kubernetes/manifests/kube-apiserver.yaml
-  register: kubeadm_apiserver_manifest
-
 - name: Ensure that the kubelet is running
   systemd:
     name: kubelet
-    state: restarted
-    daemon_reload: true
-    enabled: true
+    state: started
 
-- name: Run kubeadm init on primary master
-  shell: "/usr/bin/kubeadm init --config=/etc/kubernetes/kubeadm-config.yaml --ignore-preflight-errors=all --cri-socket=/var/run/containerd/containerd.sock"
-  delegate_to: "{{ ansible_play_hosts | first }}"
-  run_once: true
-  when: not kubeadm_apiserver_manifest.stat.exists and inventory_hostname == ansible_play_hosts | first
-
-- name: Slurp the ca certificate and key
-  slurp:
-    src: "/etc/kubernetes/{{ item }}"
-  with_items:
-  - pki/ca.crt
-  - pki/ca.key
-  - pki/sa.key
-  - pki/sa.pub
-  - pki/front-proxy-ca.crt
-  - pki/front-proxy-ca.key
-  - pki/etcd/ca.crt
-  - pki/etcd/ca.key
-  - admin.conf
-  register: kube_pki
-  when: inventory_hostname == ansible_play_hosts | first
-  run_once: true
-
-- name: Make sure the /etc/kubernetes/pki/etcd folder exists
+- name: Ensure the /etc/kubernetes directory exists
   file:
-    path: /etc/kubernetes/pki/etcd
+    path: /etc/kubernetes
     state: directory
 
-- name: Add kube pki assets
-  no_log: True
-  copy:
-    dest: "{{ item.source }}"
-    content: "{{ item.content | b64decode }}"
+- name: Generate the first kubeadm config
+  template:
+    src: etc/kubernetes/kubeadm-config-first.yaml
+    dest: /etc/kubernetes/kubeadm.yaml
     owner: root
     group: root
-    mode: 0700
-  with_items: "{{ hostvars[ansible_play_hosts | first].kube_pki.results }}"
-  when: inventory_hostname != ansible_play_hosts | first
+  when: kubernetes_is_primary_master == true
 
-# - name: Run kubeadm join on other masters
-#   shell: "/usr/bin/kubeadm join {{ kubernetes.apiServer.loadBalancer.ip }}:6443 --config=/etc/kubernetes/kubeadm-config.yaml --ignore-preflight-errors=all"
-#   when: inventory_hostname != ansible_play_hosts | first
+- name: Copy all of the addons into the kubernetes directory on the first master
+  copy:
+    src: "{{ role_path }}/files/etc/kubernetes/addons"
+    dest: /etc/kubernetes
+  when: kubernetes_is_primary_master == true
 
-# - name: Create kubernetes config directory
+- name: Generate the kube-router configmap
+  template:
+    src: etc/kubernetes/addons/kube-router-configmap.yaml
+    dest: /etc/kubernetes/addons/kube-router-configmap.yaml
+    owner: root
+    group: root
+  when: kubernetes_is_primary_master == true
+
+- name: Generate the kube-router daemonset
+  template:
+    src: etc/kubernetes/addons/kube-router-daemonset.yaml
+    dest: /etc/kubernetes/addons/kube-router-daemonset.yaml
+    owner: root
+    group: root
+  when: kubernetes_is_primary_master == true
+
+- name: Make sure our init directory exists
+  file:
+    path: /etc/kubernetes/init
+    state: directory
+  when: kubernetes_is_primary_master == true
+
+- name: Perform the preflight phase
+  shell: "/usr/bin/kubeadm init phase preflight --config=/etc/kubernetes/kubeadm.yaml"
+  when: kubernetes_is_primary_master == true
+
+- name: Let kubeadm rewrite the kubelet settings and restart it for us
+  shell: "/usr/bin/kubeadm init phase kubelet-start --config=/etc/kubernetes/kubeadm.yaml"
+  when: kubernetes_is_primary_master == true
+
+- name: Generate all of our certs
+  shell: "/usr/bin/kubeadm init phase certs all --config=/etc/kubernetes/kubeadm.yaml && touch /etc/kubernetes/init/certs"
+  args:
+    creates: "/etc/kubernetes/init/certs"
+  when: kubernetes_is_primary_master == true
+
+- name: Create all of the kube configurations for all of the roles
+  shell: "/usr/bin/kubeadm init phase kubeconfig all --config=/etc/kubernetes/kubeadm.yaml && touch /etc/kubernetes/init/kubeconfig.all"
+  args:
+    creates: "/etc/kubernetes/init/kubeconfig.all"
+  when: kubernetes_is_primary_master == true
+
+- name: Generate static pod manifests for the control plane
+  shell: "/usr/bin/kubeadm init phase control-plane all --config=/etc/kubernetes/kubeadm.yaml && touch /etc/kubernetes/init/control-plane.all"
+  args:
+    creates: "/etc/kubernetes/init/control-plane.all"
+  when: kubernetes_is_primary_master == true
+
+- name: Generate a static pod manifest for the local etcd installation
+  shell: "/usr/bin/kubeadm init phase etcd local --config=/etc/kubernetes/kubeadm.yaml && touch /etc/kubernetes/init/etcd.local"
+  args:
+    creates: "/etc/kubernetes/init/etcd.local"
+  when: kubernetes_is_primary_master == true
+
+- name: Wait for the kube-apiserver port to become responsive
+  wait_for:
+    port: 6443
+  when: kubernetes_is_primary_master == true
+
+- name: Upload all of the kubeadm and kubelet configuration to a ConfigMap
+  shell: "/usr/bin/kubeadm init phase upload-config all --config=/etc/kubernetes/kubeadm.yaml && touch /etc/kubernetes/init/upload-config.all"
+  retries: 10
+  delay: 5
+  register: kubernetes_init_upload_config_all
+  until: kubernetes_init_upload_config_all.rc == 0
+  args:
+    creates: "/etc/kubernetes/init/upload-config.all"
+  when: kubernetes_is_primary_master == true
+
+- name: Mark this node as a control plane
+  shell: "/usr/bin/kubeadm init phase mark-control-plane --config=/etc/kubernetes/kubeadm.yaml && touch /etc/kubernetes/init/mark-control-plane"
+  args:
+    creates: "/etc/kubernetes/init/mark-control-plane"
+  when: kubernetes_is_primary_master == true
+
+- name: Initialize the CoreDNS addon
+  shell: "/usr/bin/kubeadm init phase addon coredns --config=/etc/kubernetes/kubeadm.yaml && touch /etc/kubernetes/init/addon.coredns"
+  args:
+    creates: "/etc/kubernetes/init/addon.coredns"
+  when: kubernetes_is_primary_master == true
+
+- name: Apply our custom addons
+  shell: "/usr/bin/kubectl --kubeconfig=/etc/kubernetes/admin.conf apply -f /etc/kubernetes/addons/ && touch /etc/kubernetes/init/addon.custom"
+  args:
+    creates: "/etc/kubernetes/init/addon.custom"
+  when: kubernetes_is_primary_master == true
+
+- name: Create our bootstrap token
+  shell: "/usr/bin/kubeadm init phase bootstrap-token --config=/etc/kubernetes/kubeadm.yaml --skip-token-print && touch /etc/kubernetes/init/bootstrap_token"
+  args:
+    creates: "/etc/kubernetes/init/bootstrap_token"
+  when: kubernetes_is_primary_master == true
+
+# - name: Slurp the CA from the primary master
+#   slurp:
+#     src: "/etc/kubernetes/pki/ca.crt"
+#   register: kubernetes_ca
+#   when: kubernetes_is_primary_master == true
+
+# - name: Slurp all of the certificates from the primary master
+#   slurp:
+#     src: "/etc/kubernetes/pki/{{item}}"
+#   register: kubernetes_pki
+#   with_items:
+#   - ca.crt
+#   - ca.key
+#   - etcd/ca.crt
+#   - etcd/ca.key
+#   - front-proxy-ca.crt
+#   - front-proxy-ca.key
+#   - sa.key
+#   - sa.pub
+#   delegate_to: "{{ groups['masters'] | first }}"
+#   when: kubernetes_is_primary_master == true
+
+# - name: Make sure the PKI directory exists
 #   file:
-#     dest: "/root/.kube/"
+#     dest: /etc/kubernetes/pki/
 #     state: directory
-#     mode: 0600
+#     owner: root
+#     group: root
 
-# - name: Copy kubernetes config to home directory
-#   command: "cp /etc/kubernetes/admin.conf /root/.kube/config"
-
-# - name: Set config permissions
+# - name: Make sure the PKI etcd directory exists
 #   file:
-#     dest: "/root/.kube/config"
-#     mode: 0600
-#     state: file
+#     dest: /etc/kubernetes/pki/etcd
+#     state: directory
+#     owner: root
+#     group: root
+
+# - name: Copy all of the slurped PKI certs to the non-primary masters
+#   no_log: true
+#   copy:
+#     dest: "{{ item.source }}"
+#     content: "{{ item.content | b64decode }}"
+#     owner: root
+#     group: root
+#     mode: 0700
+#   with_items: "{{ hostvars[groups['masters'] | first].kubernetes_pki.results }}"
+#   when: kubernetes_is_primary_master != true and kubernetes_role == 'master'
+
+# - name: Create a node token for joining the cluster
+#   command: '/usr/bin/kubeadm token create --kubeconfig /etc/kubernetes/admin.conf --ttl 5m --groups system:bootstrappers:kubeadm:default-node-token,system:bootstrappers:kubeadm:controlplane-token --description "{{ ansible_hostname }} @ {{ ansible_date_time.iso8601_micro }}"'
+#   register: kubernetes_node_token
+#   delegate_to: "{{ groups['masters'] | first }}"
+#   when: kubernetes_is_primary_master != true and kubernetes_role == 'master'
+
+# - name: debug node token
+#   debug:
+#     var: kubernetes_node_token.stdout

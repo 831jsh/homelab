@@ -1,0 +1,13 @@
+---
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: system:kubeadm:controlplane-bootstrap
+  namespace: kube-system
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
