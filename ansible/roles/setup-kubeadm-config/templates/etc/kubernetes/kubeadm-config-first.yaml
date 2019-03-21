@@ -5,7 +5,7 @@ localAPIEndpoint:
   advertiseAddress: "{{ ansible_default_ipv4.address }}"
 nodeRegistration:
   name: "{{ hostvars[inventory_hostname]['ansible_hostname'] }}"
-  criSocket: /var/run/containerd/containerd.sock
+  criSocket: unix:///var/run/containerd/containerd.sock
 ---
 apiVersion: kubeadm.k8s.io/v1beta1
 kind: ClusterConfiguration
@@ -22,10 +22,10 @@ networking:
   dnsDomain: "{{ kubernetes.network.dns.domain }}"
   podSubnet: "{{ kubernetes.network.pods.cidr }}"
   serviceSubnet: "{{ kubernetes.network.services.cidr }}"
----
-apiVersion: kubeproxy.config.k8s.io/v1alpha1
-kind: KubeProxyConfiguration
-clusterCIDR: "{{ kubernetes.network.pods.cidr }}"
+dns:
+  type: "{{ kubernetes.dns.type }}"
+  imageRepository: "{{ kubernetes.dns.image.repo }}"
+  imageTag: "{{ kubernetes.dns.image.tag }}"
 ---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration

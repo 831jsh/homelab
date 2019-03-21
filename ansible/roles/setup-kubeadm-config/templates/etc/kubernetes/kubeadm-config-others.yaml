@@ -4,12 +4,16 @@ kind: JoinConfiguration
 caCertPath: /etc/kubernetes/pki/ca.crt
 discovery:
   bootstrapToken:
-    token: "{{ kubeadm.token.value }}"
+    token: "{{ kubernetes_node_token.stdout }}"
     apiServerEndpoint: "{{ kubernetes.apiServer.loadBalancer.ip }}:6443"
+    unsafeSkipCAVerification: false
+    caCertHashes:
+     - "sha256:{{ kubernetes_ca.content | b64decode | spki_fingerprint }}"
+  tlsBootstrapToken: "{{ kubernetes_node_token.stdout }}"
 controlPlane:
   localAPIEndpoint:
     advertiseAddress: "{{ ansible_default_ipv4.address }}"
     bindPort: 6443
 nodeRegistration:
   name: "{{ hostvars[inventory_hostname]['ansible_hostname'] }}"
-  criSocket: /var/run/containerd/containerd.sock
+  criSocket: unix:///var/run/containerd/containerd.sock
