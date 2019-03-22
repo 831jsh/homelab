@@ -34,4 +34,5 @@
   become: yes
   roles:
   # - install-kubectl
+  - temp-clean-kubeadm-up
   - setup-kubeadm-masters
