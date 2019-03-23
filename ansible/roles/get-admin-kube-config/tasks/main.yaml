@@ -1,0 +1,25 @@
+---
+- name: Slurp the admin kube config from a master
+  become: yes
+  slurp:
+    src: /etc/kubernetes/admin.conf
+  register: admin_kube_config
+  delegate_to: "{{ groups['masters'] | first }}"
+  run_once: true
+
+- name: Write out the kube config to the local directory
+  copy:
+    content: "{{ admin_kube_config.content | b64decode }}"
+    dest: "{{ playbook_dir }}/../admin.conf"
+
+- name: Replace the username
+  replace:
+    path: "{{ playbook_dir }}/../admin.conf"
+    regexp: "kubernetes-admin"
+    replace: "admin"
+
+- name: Replace the cluster name
+  replace:
+    path: "{{ playbook_dir }}/../admin.conf"
+    regexp: "kubernetes"
+    replace: "radium"

@@ -1,0 +1,12 @@
+- hosts: k8s-master-01
+  gather_facts: false
+  become: yes
+  pre_tasks:
+  - name: install python
+    raw: bash -c "test -e /usr/bin/python || (apt -qqy update && apt install -qqy python python-pip)"
+    register: output
+    changed_when: output.stdout != ""
+
+- hosts: localhost
+  roles:
+  - get-admin-kube-config
