@@ -8,12 +8,6 @@
     register: output
     changed_when: output.stdout != ""
 
-- hosts: all
-  serial: true
-  become: yes
-  roles:
-  - upgrade-os
-
 - hosts: kubernetes-nodes
   become: yes
   roles:
@@ -28,7 +22,7 @@
   - install-kubernetes-cni
   - install-kubelet
   - install-kubeadm
-  - install-kubeadm-modules
+  - install-kubernetes-modules
 
 - hosts: masters
   become: yes
