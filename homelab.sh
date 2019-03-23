@@ -11,10 +11,11 @@ inventory_file="${ansible_base}/inventory/all.yaml"
 sub_help(){
   echo "Usage: ${program_name} <subcommand> [options]\n"
   echo "Subcommands:"
-  echo "    install      Initialize the cluster by ensuring an expected state"
-  echo "    upgrade      Perform an upgrade on the cluster"
-  echo "    uninstall    Uninstalls everything that was previously setup"
-  echo "    kubeconfig   Retrieves the admin kube config from a master"
+  echo "    install         Initialize the cluster by ensuring an expected state"
+  echo "    upgrade         Perform an upgrade on the cluster"
+  echo "    uninstall       Uninstalls everything that was previously setup"
+  echo "    kubeconfig      Retrieves the admin kube config from a master"
+  echo "    reboot [hosts]  Reboots the host(s); 'all' is the default"
   echo ""
   echo "For help with each subcommand run:"
   echo "${program_name} <subcommand> -h|--help"
@@ -66,6 +67,16 @@ sub_uninstall(){
 
 sub_kubeconfig(){
   ${ansible} -i ${inventory_file} ${ansible_base}/get-admin-kube-config.yaml --ask-become-pass
+}
+
+sub_reboot() {
+  hosts=${1}
+
+  if [ "$hosts" = "" ]; then
+    hosts="all"
+  fi
+
+  ${ansible} -i ${inventory_file} ${ansible_base}/reboot.yaml --ask-become-pass --extra-vars="reboot_hosts=${hosts}"
 }
 
 show_error(){
