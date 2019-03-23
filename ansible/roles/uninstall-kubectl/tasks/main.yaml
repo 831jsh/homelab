@@ -1,0 +1,10 @@
+---
+- name: Unlock the kubectl package
+  dpkg_selections:
+    name: kubectl
+    selection: purge
+
+- name: Uninstall the kubectl package
+  apt:
+    name: kubectl
+    state: absent

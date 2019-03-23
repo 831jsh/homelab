@@ -1,0 +1,17 @@
+---
+- name: Disable and stop kubelet
+  service:
+    name: kubelet
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+
+- name: Unlock the kubelet package
+  dpkg_selections:
+    name: kubelet
+    selection: purge
+
+- name: Uninstall the kubelet package
+  apt:
+    name: kubelet
+    state: absent

@@ -1,0 +1,5 @@
+---
+- name: Remove the kubernetes apt repo
+  apt_repository:
+    repo: "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+    state: absent

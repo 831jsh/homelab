@@ -1,0 +1,11 @@
+---
+- name: Uninstall common packages that don't clash with the system
+  apt:
+    name: "{{ packages }}"
+    state: absent
+  vars:
+    packages:
+    - jq
+    - nfs-common
+    - socat
+    - ipvsadm

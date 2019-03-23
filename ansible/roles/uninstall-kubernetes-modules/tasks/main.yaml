@@ -1,0 +1,6 @@
+---
+- name: Remove the entry for kubernetes modules
+  file:
+    path: /etc/modules-load.d/kubernetes.conf
+    state: absent
+  notify: service.systemd-modules-load

@@ -44,7 +44,7 @@ spec:
         - "--metrics-port=8080"
         - "--iptables-sync-period=60s"
         - "--ipvs-sync-period=60s"
-        - "--master=https://{{ kubernetes.apiServer.loadBalancer.ip }}:{{ kubernetes.apiServer.loadBalancer.port }}/"
+        - "--master=https://{{ kubernetes.apiServer.loadBalancer.ip }}:6443/"
         - "-v=2"
         env:
         - name: KUBE_ROUTER_CNI_CONF_FILE

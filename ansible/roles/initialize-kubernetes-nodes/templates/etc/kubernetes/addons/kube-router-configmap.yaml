@@ -52,7 +52,7 @@ data:
     clusters:
     - cluster:
         certificate-authority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
-        server: "https://{{ kubernetes.apiServer.loadBalancer.ip }}:{{ kubernetes.apiServer.loadBalancer.port }}"
+        server: "https://{{ kubernetes.apiServer.loadBalancer.ip }}:6443"
       name: default
     contexts:
     - context:

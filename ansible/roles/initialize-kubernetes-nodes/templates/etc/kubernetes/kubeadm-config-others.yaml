@@ -10,10 +10,12 @@ discovery:
     caCertHashes:
     - "sha256:{{ kubernetes_ca.content | b64decode | spki_fingerprint }}"
   tlsBootstrapToken: "{{ kubernetes_node_token.stdout }}"
+{% if kubernetes_role == 'master' %}
 controlPlane:
   localAPIEndpoint:
     advertiseAddress: "{{ ansible_default_ipv4.address }}"
     bindPort: 6443
+{% endif %}
 nodeRegistration:
   name: "{{ hostvars[inventory_hostname]['ansible_hostname'] }}"
   criSocket: "unix://{{ containerd.socket_path }}"

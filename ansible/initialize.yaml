@@ -8,31 +8,35 @@
     register: output
     changed_when: output.stdout != ""
 
-# - hosts: all
-#   serial: true
-#   become: yes
-#   roles:
-#   - upgrade-os
+- hosts: all
+  serial: true
+  become: yes
+  roles:
+  - upgrade-os
 
-# - hosts: all
-#   become: yes
-#   roles:
-#   - remove-snap
-#   - disable-swap
-#   - enable-ipv4-forwarding
-#   - enable-masquerading
-#   - install-common-packages
-#   - set-bridge-nf-call-iptables
-#   - install-containerd
-#   - add-kubernetes-repo
-#   - install-kubernetes-cni
-#   - install-kubelet
-#   - install-kubeadm
-#   - setup-kubernetes-modules
+- hosts: kubernetes-nodes
+  become: yes
+  roles:
+  - remove-snap
+  - disable-swap
+  - enable-ipv4-forwarding
+  - enable-masquerading
+  - install-common-packages
+  - set-bridge-nf-call-iptables
+  - install-containerd
+  - add-kubernetes-repo
+  - install-kubernetes-cni
+  - install-kubelet
+  - install-kubeadm
+  - install-kubeadm-modules
 
 - hosts: masters
   become: yes
   roles:
-  # - install-kubectl
-  - temp-clean-kubeadm-up
-  - setup-kubeadm-masters
+  - install-kubectl
+
+- hosts: kubernetes-nodes
+  become: yes
+  order: sorted
+  roles:
+  - initialize-kubernetes-nodes

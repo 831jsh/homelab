@@ -9,6 +9,20 @@
     path: /etc/kubernetes
     state: directory
 
+- name: Ensure the /etc/cni/net.d directory exists
+  file:
+    path: "/etc/cni/net.d"
+    state: directory
+
+- name: Copy over the kuberouter configuration
+  copy:
+    src: files/etc/cni/net.d/10-kuberouter.json
+    dest: /etc/cni/net.d/10-kuberouter.conflist
+    owner: root
+    group: root
+    mode: 0644
+    force: no
+
 - name: Generate the first kubeadm config
   template:
     src: etc/kubernetes/kubeadm-config-first.yaml
@@ -59,7 +73,7 @@
     creates: "/etc/kubernetes/init/certs"
   when: kubernetes_is_primary_master == true
 
-- name: Create all of the kube configurations for all of the roles
+- name: Create all of the kubeconfigs
   shell: "/usr/bin/kubeadm init phase kubeconfig all --config=/etc/kubernetes/kubeadm.yaml && touch /etc/kubernetes/init/kubeconfig.all"
   args:
     creates: "/etc/kubernetes/init/kubeconfig.all"
@@ -116,59 +130,76 @@
     creates: "/etc/kubernetes/init/bootstrap_token"
   when: kubernetes_is_primary_master == true
 
-# - name: Slurp the CA from the primary master
-#   slurp:
-#     src: "/etc/kubernetes/pki/ca.crt"
-#   register: kubernetes_ca
-#   when: kubernetes_is_primary_master == true
+- name: Slurp the CA from the primary master
+  slurp:
+    src: "/etc/kubernetes/pki/ca.crt"
+  register: kubernetes_ca
+  delegate_to: "{{ groups['masters'] | first }}"
+  when: kubernetes_is_primary_master != true
 
-# - name: Slurp all of the certificates from the primary master
-#   slurp:
-#     src: "/etc/kubernetes/pki/{{item}}"
-#   register: kubernetes_pki
-#   with_items:
-#   - ca.crt
-#   - ca.key
-#   - etcd/ca.crt
-#   - etcd/ca.key
-#   - front-proxy-ca.crt
-#   - front-proxy-ca.key
-#   - sa.key
-#   - sa.pub
-#   delegate_to: "{{ groups['masters'] | first }}"
-#   when: kubernetes_is_primary_master == true
+- name: Slurp all of the certificates from the primary master
+  slurp:
+    src: "/etc/kubernetes/pki/{{item}}"
+  register: kubernetes_pki
+  with_items:
+  - ca.crt
+  - ca.key
+  - etcd/ca.crt
+  - etcd/ca.key
+  - front-proxy-ca.crt
+  - front-proxy-ca.key
+  - sa.key
+  - sa.pub
+  delegate_to: "{{ groups['masters'] | first }}"
+  when: kubernetes_is_primary_master == true
 
-# - name: Make sure the PKI directory exists
-#   file:
-#     dest: /etc/kubernetes/pki/
-#     state: directory
-#     owner: root
-#     group: root
+- name: Make sure the PKI directory exists
+  file:
+    dest: /etc/kubernetes/pki/
+    state: directory
+    owner: root
+    group: root
+  when: kubernetes_role == 'master'
 
-# - name: Make sure the PKI etcd directory exists
-#   file:
-#     dest: /etc/kubernetes/pki/etcd
-#     state: directory
-#     owner: root
-#     group: root
+- name: Make sure the PKI etcd directory exists
+  file:
+    dest: /etc/kubernetes/pki/etcd
+    state: directory
+    owner: root
+    group: root
+  when: kubernetes_role == 'master'
 
-# - name: Copy all of the slurped PKI certs to the non-primary masters
-#   no_log: true
-#   copy:
-#     dest: "{{ item.source }}"
-#     content: "{{ item.content | b64decode }}"
-#     owner: root
-#     group: root
-#     mode: 0700
-#   with_items: "{{ hostvars[groups['masters'] | first].kubernetes_pki.results }}"
-#   when: kubernetes_is_primary_master != true and kubernetes_role == 'master'
+- name: Copy all of the slurped PKI certs to the non-primary masters
+  no_log: true
+  copy:
+    dest: "{{ item.source }}"
+    content: "{{ item.content | b64decode }}"
+    owner: root
+    group: root
+    mode: 0700
+  with_items: "{{ hostvars[groups['masters'] | first].kubernetes_pki.results }}"
+  when: kubernetes_is_primary_master != true and kubernetes_role == 'master'
 
-# - name: Create a node token for joining the cluster
-#   command: '/usr/bin/kubeadm token create --kubeconfig /etc/kubernetes/admin.conf --ttl 5m --groups system:bootstrappers:kubeadm:default-node-token,system:bootstrappers:kubeadm:controlplane-token --description "{{ ansible_hostname }} @ {{ ansible_date_time.iso8601_micro }}"'
-#   register: kubernetes_node_token
-#   delegate_to: "{{ groups['masters'] | first }}"
-#   when: kubernetes_is_primary_master != true and kubernetes_role == 'master'
+- name: Create a node token for joining the cluster
+  command: '/usr/bin/kubeadm token create --kubeconfig /etc/kubernetes/admin.conf --ttl 5m --groups system:bootstrappers:kubeadm:default-node-token,system:bootstrappers:kubeadm:controlplane-token --description "{{ ansible_hostname }} @ {{ ansible_date_time.iso8601_micro }}"'
+  register: kubernetes_node_token
+  delegate_to: "{{ groups['masters'] | first }}"
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+  when: kubernetes_is_primary_master != true
 
-# - name: debug node token
-#   debug:
-#     var: kubernetes_node_token.stdout
+- name: Generate the kubeadm config for the other nodes (masters and workers)
+  template:
+    src: etc/kubernetes/kubeadm-config-others.yaml
+    dest: /etc/kubernetes/kubeadm.yaml
+    owner: root
+    group: root
+  when: kubernetes_is_primary_master != true
+
+- name: Join the masters to the existing cluster
+  command: "/usr/bin/kubeadm join {{kubernetes.apiServer.loadBalancer.ip }}:6443 --config=/etc/kubernetes/kubeadm.yaml --experimental-control-plane"
+  when: kubernetes_is_primary_master != true and kubernetes_role == 'master'
+
+- name: Join the workers to the existing cluster
+  command: "/usr/bin/kubeadm join {{kubernetes.apiServer.loadBalancer.ip }}:6443 --config=/etc/kubernetes/kubeadm.yaml --ignore-preflight-errors=all"
+  when: kubernetes_is_primary_master != true and kubernetes_role == 'worker'

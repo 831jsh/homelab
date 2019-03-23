@@ -1,0 +1,5 @@
+---
+- name: service.systemd-modules-load
+  service:
+    name: systemd-modules-load
+    state: restarted

@@ -1,0 +1,38 @@
+---
+- name: Stop any/all outstanding pods with crictl
+  shell: /usr/local/bin/crictl rmp $(/usr/local/bin/crictl pods -a -q)
+  ignore_errors: yes
+
+- name: Stop any/all outstanding containers with crictl
+  shell: /usr/local/bin/crictl rm $(/usr/local/bin/crictl ps -a -q)
+  ignore_errors: yes
+
+- name: Remove any/all outstanding images with crictl
+  shell: /usr/local/bin/crictl rmi $(/usr/local/bin/crictl images -q)
+  ignore_errors: yes
+
+- name: Disable and stop containerd
+  service:
+    name: containerd
+    state: stopped
+    enabled: no
+  ignore_errors: yes
+
+- name: Cleanup any unused directories and files
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+  - /opt/containerd
+  - /usr/local/sbin/runc
+  - /usr/local/bin/crictl
+  - /usr/local/bin/containerd
+  - /usr/local/bin/containerd-stress
+  - /usr/local/bin/critest
+  - /usr/local/bin/containerd-release
+  - /usr/local/bin/containerd-shim
+  - /usr/local/bin/ctr
+  - /etc/systemd/system/containerd.service
+  - /etc/crictl.yaml
+  - "{{ containerd.paths.conf }}"
+  - /etc/profile.d/containerd.sh

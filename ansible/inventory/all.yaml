@@ -1,40 +1,42 @@
 all:
   children:
 
-    masters:
+    kubernetes-nodes:
       children:
 
-        k8s-master-01:
-          hosts:
-            192.168.13.61:
+        masters:
+          children:
+
+            k8s-master-01:
+              hosts:
+                192.168.13.61:
+              vars:
+                kubernetes_is_primary_master: true
+            k8s-master-02:
+              hosts:
+                192.168.13.62:
+            k8s-master-03:
+              hosts:
+                192.168.13.63:
+
           vars:
-            kubernetes_is_primary_master: true
-        k8s-master-02:
-          hosts:
-            192.168.13.62:
+            kubernetes_role: master
+
+        workers:
+          children:
+
+            k8s-worker-01:
+              hosts:
+                192.168.13.71:
+            k8s-worker-02:
+              hosts:
+                192.168.13.72:
+            k8s-worker-03:
+              hosts:
+                192.168.13.73:
+
           vars:
-            kubernetes_is_primary_master: false
-        k8s-master-03:
-          hosts:
-            192.168.13.63:
-          vars:
-            kubernetes_is_primary_master: false
+            kubernetes_role: worker
 
       vars:
-        kubernetes_role: master
-
-    workers:
-      children:
-
-        k8s-worker-01:
-          hosts:
-            192.168.13.71:
-        k8s-worker-02:
-          hosts:
-            192.168.13.72:
-        k8s-worker-03:
-          hosts:
-            192.168.13.73:
-
-      vars:
-        kubernetes_role: worker
+        kubernetes_is_primary_master: false

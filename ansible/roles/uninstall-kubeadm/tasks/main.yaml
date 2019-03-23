@@ -1,0 +1,10 @@
+---
+- name: Unlock the kubeadm package
+  dpkg_selections:
+    name: kubeadm
+    selection: purge
+
+- name: Uninstall the kubeadm package
+  apt:
+    name: kubeadm
+    state: absent

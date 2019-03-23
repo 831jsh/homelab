@@ -11,8 +11,9 @@ inventory_file="${ansible_base}/inventory/all.yaml"
 sub_help(){
   echo "Usage: ${program_name} <subcommand> [options]\n"
   echo "Subcommands:"
-  echo "    init      Initialize the cluster by ensuring an expected state"
-  echo "    upgrade   Perform an upgrade on the cluster"
+  echo "    init       Initialize the cluster by ensuring an expected state"
+  echo "    upgrade    Perform an upgrade on the cluster"
+  echo "    uninstall  Uninstalls everything that was previously setup"
   echo ""
   echo "For help with each subcommand run:"
   echo "${program_name} <subcommand> -h|--help"
@@ -56,6 +57,10 @@ sub_upgrade_k8s(){
 
 sub_init(){
   ${ansible} -i ${inventory_file} ${ansible_base}/initialize.yaml --ask-become-pass
+}
+
+sub_uninstall(){
+  ${ansible} -i ${inventory_file} ${ansible_base}/uninstall.yaml --ask-become-pass
 }
 
 show_error(){
