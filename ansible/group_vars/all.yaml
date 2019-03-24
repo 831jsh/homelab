@@ -24,7 +24,7 @@ kubernetes:
     type: CoreDNS
     image:
       repo: docker.io/coredns
-      tag: 1.4.0
+      tag: 1.2.6
   network:
     dns:
       domain: "cluster.local"
