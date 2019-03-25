@@ -12,7 +12,6 @@ apiVersion: kubeadm.k8s.io/v1beta1
 kind: ClusterConfiguration
 apiServer:
   extraArgs:
-    # anonymous-auth: "false"
     audit-log-path: "{{ kubernetes.auditPolicy.logDir }}/audit.log"
     audit-log-maxage: "{{ kubernetes.auditPolicy.logMaxAge }}"
 certificatesDir: /etc/kubernetes/pki
