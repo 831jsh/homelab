@@ -39,3 +39,6 @@ kubeadm:
   version: "1.13.4"
 kubectl:
   version: "1.13.4"
+calico:
+  installationURL: "https://docs.projectcalico.org/v3.6/getting-started/kubernetes/installation/hosted/kubernetes-datastore/calico-networking/1.7/calico.yaml"
+  metricsEnabled: true

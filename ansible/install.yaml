@@ -34,3 +34,4 @@
   order: sorted
   roles:
   - initialize-kubernetes-nodes
+  - install-calico

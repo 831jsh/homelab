@@ -37,22 +37,6 @@
     dest: /etc/kubernetes
   when: kubernetes_is_primary_master == true
 
-- name: Generate the kube-router configmap
-  template:
-    src: etc/kubernetes/addons/kube-router-configmap.yaml
-    dest: /etc/kubernetes/addons/kube-router-configmap.yaml
-    owner: root
-    group: root
-  when: kubernetes_is_primary_master == true
-
-- name: Generate the kube-router daemonset
-  template:
-    src: etc/kubernetes/addons/kube-router-daemonset.yaml
-    dest: /etc/kubernetes/addons/kube-router-daemonset.yaml
-    owner: root
-    group: root
-  when: kubernetes_is_primary_master == true
-
 - name: Make sure our init directory exists
   file:
     path: /etc/kubernetes/init
@@ -116,6 +100,12 @@
   shell: "/usr/bin/kubeadm init phase addon coredns --config=/etc/kubernetes/kubeadm.yaml && touch /etc/kubernetes/init/addon.coredns"
   args:
     creates: "/etc/kubernetes/init/addon.coredns"
+  when: kubernetes_is_primary_master == true
+
+- name: Initialize the kube-proxy addon
+  shell: "/usr/bin/kubeadm init phase addon kube-proxy --config /etc/kubernetes/kubeadm.yaml && touch /etc/kubernetes/init/addon.kube-proxy"
+  args:
+    creates: "/etc/kubernetes/init/addon.kube-proxy"
   when: kubernetes_is_primary_master == true
 
 - name: Apply our custom addons
@@ -203,3 +193,21 @@
 - name: Join the workers to the existing cluster
   command: "/usr/bin/kubeadm join {{kubernetes.apiServer.loadBalancer.ip }}:6443 --config=/etc/kubernetes/kubeadm.yaml --ignore-preflight-errors=all"
   when: kubernetes_is_primary_master != true and kubernetes_role == 'worker'
+
+- name: Create kubernetes config directory
+  file:
+    dest: /root/.kube/
+    state: directory
+    mode: 0600
+  when: kubernetes_role == 'master'
+
+- name: Copy kubernetes config to home directory
+  command: cp /etc/kubernetes/admin.conf /root/.kube/config
+  when: kubernetes_role == 'master'
+
+- name: Set config permissions
+  file:
+    dest: /root/.kube/config
+    mode: 0600
+    state: file
+  when: kubernetes_role == 'master'
