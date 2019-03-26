@@ -63,3 +63,4 @@
     state: started
     name: containerd
     enabled: true
+    daemon_reload: yes

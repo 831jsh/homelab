@@ -1,0 +1,28 @@
+---
+# based off of: https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/kubeadm-upgrade-1-14/
+
+- name: Unlock the kubeadm package
+  dpkg_selections:
+    name: kubeadm
+    selection: install
+  when: kubernetes_is_primary_master == true
+
+- name: Upgrade the kubeadm package
+  apt:
+    name: "kubeadm={{ kubeadm.version }}-00"
+    force: yes
+  when: kubernetes_is_primary_master == true
+
+- name: Lock the kubeadm package at its current version
+  dpkg_selections:
+    name: kubeadm
+    selection: hold
+  when: kubernetes_is_primary_master == true
+
+- name: Change the kubernetes version in kubeadm.yaml
+  replace:
+    path: /etc/kubernetes/kubeadm.yaml
+    regexp: '^kubernetesVersion:\s\"v(.*)\"$'
+    replace: "kubernetesVersion: \"v{{ kubernetes.version }}\""
+    backup: yes
+  when: kubernetes_is_primary_master == true

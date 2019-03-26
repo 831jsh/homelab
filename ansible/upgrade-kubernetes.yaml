@@ -1,0 +1,15 @@
+---
+- hosts: all
+  gather_facts: false
+  become: yes
+  pre_tasks:
+  - name: Install python and python-pip for ansible access
+    raw: bash -c "test -e /usr/bin/python || (apt -qqy update && apt install -qqy python python-pip)"
+    register: output
+    changed_when: output.stdout != ""
+
+- hosts: k8s-master-01
+  become: yes
+  serial: true
+  roles:
+  - upgrade-control-plane

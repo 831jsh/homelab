@@ -54,7 +54,7 @@ sub_upgrade_os(){
 }
 
 sub_upgrade_k8s(){
-  echo "todo: Performing upgrade k8s"
+  ${ansible} -i ${inventory_file} ${ansible_base}/upgrade-kubernetes.yaml --ask-become-pass
 }
 
 sub_install(){
