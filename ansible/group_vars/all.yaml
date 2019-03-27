@@ -1,12 +1,8 @@
 ---
 networkInterface: ens18
-containerd:
-  version: "1.2.5"
-  os: linux
-  arch: amd64
-  socket_path: /var/run/containerd/containerd.sock
-  paths:
-    conf: /etc/containerd
+docker:
+  version: "5:18.09.3~3-0~ubuntu-bionic"
+  socket_path: /var/run/dockershim.sock
 kubernetes:
   version: "1.13.4"
   auditPolicy:

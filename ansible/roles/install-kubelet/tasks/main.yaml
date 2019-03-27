@@ -38,10 +38,15 @@
     search_string: "Installed: {{ kubelet.version }}-00"
   when: not kubelet_binary.stat.exists or kubelet_version.stdout is not search(search_string)
 
-- name: Add the kubelet configuration for containerd
+- name: Ensure the kubelet service folder exists
+  file:
+    path: /etc/systemd/system/kubelet.service.d/
+    state: directory
+
+- name: Add the kubelet configuration for the cri
   template:
-    src: etc/systemd/system/kubelet.service.d/0-containerd.conf
-    dest: /etc/systemd/system/kubelet.service.d/0-containerd.conf
+    src: etc/systemd/system/kubelet.service.d/0-cri.conf
+    dest: /etc/systemd/system/kubelet.service.d/0-cri.conf
     owner: root
     group: root
 

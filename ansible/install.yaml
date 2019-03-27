@@ -17,7 +17,7 @@
   - enable-masquerading
   - install-common-packages
   - set-bridge-nf-call-iptables
-  - install-containerd
+  - install-docker
   - add-kubernetes-repo
   - install-kubernetes-cni
   - install-kubelet

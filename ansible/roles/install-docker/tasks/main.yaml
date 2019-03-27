@@ -1,0 +1,48 @@
+---
+- name: Add docker apt key
+  apt_key:
+    url: "https://download.docker.com/linux/{{ ansible_distribution | lower}}/gpg"
+    id: 0EBFCD88
+
+- name: Add docker apt repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower}} {{ ansible_distribution_release | lower }} stable"
+    update_cache: yes
+
+- name: Install docker
+  apt:
+    name: "docker-ce={{ docker.version }}"
+    state: present
+
+- name: Lock the docker-ce package at its current version
+  dpkg_selections:
+    name: docker-ce
+    selection: hold
+
+- name: Install docker-py
+  pip:
+    name: docker-py
+
+- name: Create docker directory
+  file:
+    dest: /etc/docker
+    state: directory
+
+- name: Configure the docker daemon
+  template:
+    src: etc/docker/daemon.json
+    dest: /etc/docker/daemon.json
+  notify:
+  - Restart docker
+
+- name: Create a service.d directory for config
+  file:
+    dest: /etc/systemd/system/docker.service.d
+    state: directory
+
+- name: Enable and start the service
+  systemd:
+    name: docker
+    daemon_reload: True
+    state: started
+    enabled: True

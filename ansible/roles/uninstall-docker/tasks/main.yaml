@@ -1,0 +1,43 @@
+---
+- name: Disable and stop docker
+  systemd:
+    name: docker
+    daemon_reload: True
+    state: stopped
+    enabled: False
+
+- name: Unlock the docker-ce package
+  dpkg_selections:
+    name: docker-ce
+    selection: purge
+
+- name: Uninstall docker
+  apt:
+    name: docker-ce
+    state: absent
+
+- name: Check to see if pip is already installed
+  command: "pip --version"
+  ignore_errors: true
+  changed_when: false
+  check_mode: no
+  register: pip_is_installed
+
+- name: Uninstall docker-py
+  pip:
+    name: docker-py
+    state: absent
+  when: pip_is_installed.rc == 0
+
+- name: Remove previously created files and directories
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+  - /etc/docker
+  - /etc/systemd/system/docker.service.d
+
+- name: Remove docker apt repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower}} {{ ansible_distribution_release | lower }} stable"
+    state: absent
