@@ -4,3 +4,4 @@
     name: snapd
     autoremove: yes
     purge: yes
+    state: absent
