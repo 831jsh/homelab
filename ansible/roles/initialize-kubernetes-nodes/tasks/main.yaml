@@ -124,7 +124,7 @@
   slurp:
     src: "/etc/kubernetes/pki/ca.crt"
   register: kubernetes_ca
-  delegate_to: "{{ groups['masters'] | first }}"
+  delegate_to: "{{ groups['masters'] | sort() | first }}"
   when: kubernetes_is_primary_master != true
 
 - name: Slurp all of the certificates from the primary master
@@ -140,7 +140,7 @@
   - front-proxy-ca.key
   - sa.key
   - sa.pub
-  delegate_to: "{{ groups['masters'] | first }}"
+  delegate_to: "{{ groups['masters'] | sort() | first }}"
   when: kubernetes_is_primary_master == true
 
 - name: Make sure the PKI directory exists
@@ -167,13 +167,13 @@
     owner: root
     group: root
     mode: 0700
-  with_items: "{{ hostvars[groups['masters'] | first].kubernetes_pki.results }}"
+  with_items: "{{ hostvars[groups['masters'] | sort() | first].kubernetes_pki.results }}"
   when: kubernetes_is_primary_master != true and kubernetes_role == 'master'
 
 - name: Create a node token for joining the cluster
   command: '/usr/bin/kubeadm token create --kubeconfig /etc/kubernetes/admin.conf --ttl 5m --groups system:bootstrappers:kubeadm:default-node-token,system:bootstrappers:kubeadm:controlplane-token --description "{{ ansible_hostname }} @ {{ ansible_date_time.iso8601_micro }}"'
   register: kubernetes_node_token
-  delegate_to: "{{ groups['masters'] | first }}"
+  delegate_to: "{{ groups['masters'] | sort() | first }}"
   environment:
     KUBECONFIG: /etc/kubernetes/admin.conf
   when: kubernetes_is_primary_master != true
@@ -187,7 +187,7 @@
   when: kubernetes_is_primary_master != true
 
 - name: Join the masters to the existing cluster
-  command: "/usr/bin/kubeadm join {{kubernetes.apiServer.loadBalancer.ip }}:6443 --config=/etc/kubernetes/kubeadm.yaml --experimental-control-plane"
+  command: "/usr/bin/kubeadm join {{kubernetes.apiServer.loadBalancer.ip }}:6443 --config=/etc/kubernetes/kubeadm.yaml"
   when: kubernetes_is_primary_master != true and kubernetes_role == 'master'
 
 - name: Join the workers to the existing cluster

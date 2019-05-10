@@ -4,7 +4,7 @@
   slurp:
     src: /etc/kubernetes/admin.conf
   register: admin_kube_config
-  delegate_to: "{{ groups['masters'] | first }}"
+  delegate_to: "{{ groups['masters'] | sort() | first }}"
   run_once: true
 
 - name: Write out the kube config to the local directory
