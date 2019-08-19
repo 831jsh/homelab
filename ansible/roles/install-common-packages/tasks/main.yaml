@@ -18,3 +18,4 @@
     - util-linux
     - bridge-utils
     - ipvsadm
+    - ipset
