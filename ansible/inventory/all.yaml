@@ -1,21 +1,21 @@
 all:
   children:
 
-    kubernetes-nodes:
+    kubernetes_nodes:
       children:
 
         masters:
           children:
 
-            k8s-master-01:
+            k8s_master_01:
               hosts:
                 192.168.13.61:
               vars:
                 kubernetes_is_primary_master: true
-            k8s-master-02:
+            k8s_master_02:
               hosts:
                 192.168.13.62:
-            k8s-master-03:
+            k8s_master_03:
               hosts:
                 192.168.13.63:
 
@@ -25,13 +25,13 @@ all:
         workers:
           children:
 
-            k8s-worker-01:
+            k8s_worker_01:
               hosts:
                 192.168.13.71:
-            k8s-worker-02:
+            k8s_worker_02:
               hosts:
                 192.168.13.72:
-            k8s-worker-03:
+            k8s_worker_03:
               hosts:
                 192.168.13.73:
 

@@ -8,7 +8,7 @@
     register: output
     changed_when: output.stdout != ""
 
-- hosts: kubernetes-nodes
+- hosts: kubernetes_nodes
   become: yes
   roles:
   - remove-snap
@@ -29,7 +29,7 @@
   roles:
   - install-kubectl
 
-- hosts: kubernetes-nodes
+- hosts: kubernetes_nodes
   become: yes
   order: sorted
   roles:

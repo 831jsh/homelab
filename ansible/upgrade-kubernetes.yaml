@@ -8,7 +8,7 @@
     register: output
     changed_when: output.stdout != ""
 
-- hosts: k8s-master-01
+- hosts: k8s_master_01
   become: yes
   serial: true
   roles:

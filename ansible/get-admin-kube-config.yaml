@@ -1,4 +1,4 @@
-- hosts: k8s-master-01
+- hosts: k8s_master_01
   gather_facts: false
   become: yes
   pre_tasks:
