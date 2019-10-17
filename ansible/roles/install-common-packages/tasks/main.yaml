@@ -19,3 +19,4 @@
     - bridge-utils
     - ipvsadm
     - ipset
+    - python3-pip
