@@ -22,4 +22,4 @@
   replace:
     path: "{{ playbook_dir }}/../admin.conf"
     regexp: "kubernetes"
-    replace: "radium"
+    replace: "batcave"
