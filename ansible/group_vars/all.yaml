@@ -1,16 +1,16 @@
 ---
 networkInterface: ens18
 docker:
-  version: "5:18.09.3~3-0~ubuntu-bionic"
+  version: "5:18.09.5~3-0~ubuntu-bionic"
   socket_path: /var/run/dockershim.sock
 kubernetes:
-  version: "1.16.2"
+  version: "1.17.2"
   auditPolicy:
     logDir: "/var/log/kubernetes/audit"
     logMaxAge: 2
   apiServer:
     loadBalancer:
-      ip: "192.168.13.1"
+      ip: "lb.k8s"
   cni:
     version: "0.7.5"
     paths:
@@ -20,7 +20,7 @@ kubernetes:
     type: CoreDNS
     image:
       repo: docker.io/coredns
-      tag: "1.6.2"
+      tag: "1.6.7"
   network:
     dns:
       domain: "cluster.local"
@@ -30,11 +30,11 @@ kubernetes:
     services:
       cidr: "10.32.0.0/24"
 kubelet:
-  version: "1.16.2"
+  version: "1.17.2"
 kubeadm:
-  version: "1.16.2"
+  version: "1.17.2"
 kubectl:
-  version: "1.16.2"
+  version: "1.17.2"
 calico:
-  installationURL: "https://docs.projectcalico.org/v3.9/manifests/calico.yaml"
+  installationURL: "https://docs.projectcalico.org/manifests/calico.yaml"
   metricsEnabled: true
