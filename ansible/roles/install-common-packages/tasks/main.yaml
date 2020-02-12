@@ -20,3 +20,6 @@
     - ipvsadm
     - ipset
     - python3-pip
+    - open-iscsi
+  notify:
+  - Restart open-iscsi

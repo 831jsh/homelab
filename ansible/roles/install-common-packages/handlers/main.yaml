@@ -1,0 +1,5 @@
+---
+- name: Restart open-iscsi
+  systemd:
+    name: open-iscsi
+    state: restarted
