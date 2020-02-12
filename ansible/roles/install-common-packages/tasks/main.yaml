@@ -21,5 +21,10 @@
     - ipset
     - python3-pip
     - open-iscsi
-  notify:
-  - Restart open-iscsi
+
+- name: Enable and start the service
+  systemd:
+    name: iscsid
+    daemon_reload: yes
+    state: started
+    enabled: yes
