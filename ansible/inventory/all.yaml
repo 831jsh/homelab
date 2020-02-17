@@ -11,15 +11,15 @@ all:
         masters:
           children:
 
-            k8s_master_01:
+            k8s_master_1:
               hosts:
                 master.1.k8s:
               vars:
                 kubernetes_is_primary_master: true
-            k8s_master_02:
+            k8s_master_2:
               hosts:
                 master.2.k8s:
-            k8s_master_03:
+            k8s_master_3:
               hosts:
                 master.3.k8s:
 
@@ -29,15 +29,18 @@ all:
         workers:
           children:
 
-            k8s_worker_01:
+            k8s_worker_1:
               hosts:
                 worker.1.k8s:
-            k8s_worker_02:
+            k8s_worker_2:
               hosts:
                 worker.2.k8s:
-            k8s_worker_03:
+            k8s_worker_3:
               hosts:
                 worker.3.k8s:
+            k8s_worker_4:
+              hosts:
+                worker.4.k8s:
 
           vars:
             kubernetes_role: worker
