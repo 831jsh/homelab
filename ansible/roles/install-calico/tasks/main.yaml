@@ -1,28 +1,6 @@
 ---
-- name: Download the calico yaml
-  get_url:
-    url: "{{ calico.installationURL }}"
-    dest: /tmp/calico.yaml
-    force: yes
-  when: kubernetes_is_primary_master == true
-
-- name: Replace the default pod CIDR
-  lineinfile:
-    path: /tmp/calico.yaml
-    regexp: "^(\\s+)value:\\s\"192.168.0.0\\/16\"$"
-    line: "              value: \"{{ kubernetes.network.pods.cidr }}\""
-  when: kubernetes_is_primary_master == true
-
 - name: Apply the calico specs
-  shell: "kubectl apply -f {{ item }}"
-  with_items:
-  - "/tmp/calico.yaml"
-  when: kubernetes_is_primary_master == true
-
-- name: Cleanup the calico install
-  file:
-    path: /tmp/calico.yaml
-    state: absent
+  shell: "kubectl apply -f {{ calico.installationURL }}"
   when: kubernetes_is_primary_master == true
 
 - name: Turn the felix prometheus metrics on
