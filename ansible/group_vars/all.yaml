@@ -4,7 +4,7 @@ docker:
   version: "5:19.03.11~3-0~ubuntu-bionic"
   socket_path: /var/run/dockershim.sock
 kubernetes:
-  version: "1.19.6"
+  version: "1.20.2"
   auditPolicy:
     logDir: "/var/log/kubernetes/audit"
     logMaxAge: 2
@@ -30,11 +30,11 @@ kubernetes:
     services:
       cidr: "10.32.0.0/24"
 kubelet:
-  version: "1.19.6"
+  version: "1.20.2"
 kubeadm:
-  version: "1.19.6"
+  version: "1.20.2"
 kubectl:
-  version: "1.19.6"
+  version: "1.20.2"
 calico:
   installationURL: "https://docs.projectcalico.org/manifests/calico.yaml"
   metricsEnabled: true
