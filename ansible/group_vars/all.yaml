@@ -1,8 +1,8 @@
 ---
 networkInterface: ens18
-docker:
-  version: "5:19.03.11~3-0~ubuntu-bionic"
-  socket_path: /var/run/dockershim.sock
+containerd:
+  version: "1.4.3-1"
+  grpc_address: /run/containerd/containerd.sock
 kubernetes:
   version: "1.20.2"
   auditPolicy:

@@ -9,40 +9,31 @@
     repo: "deb [arch=amd64] https://download.docker.com/linux/{{ ansible_distribution | lower}} {{ ansible_distribution_release | lower }} stable"
     update_cache: yes
 
-- name: Install docker
+- name: Install containerd
   apt:
-    name: "docker-ce={{ docker.version }}"
+    name: "containerd.io={{ containerd.version }}"
     state: present
 
-- name: Lock the docker-ce package at its current version
+- name: Lock the containerd package at its current version
   dpkg_selections:
-    name: docker-ce
+    name: containerd.io
     selection: hold
 
-- name: Install docker-py
-  pip:
-    name: docker-py
-
-- name: Create docker directory
+- name: Create a directory for the containerd config
   file:
-    dest: /etc/docker
+    dest: /etc/containerd
     state: directory
 
-- name: Configure the docker daemon
+- name: Configure the containerd daemon
   template:
-    src: etc/docker/daemon.json
-    dest: /etc/docker/daemon.json
+    src: etc/containerd/config.toml
+    dest: /etc/containerd/config.toml
   notify:
-  - Restart docker
-
-- name: Create a service.d directory for config
-  file:
-    dest: /etc/systemd/system/docker.service.d
-    state: directory
+  - Restart containerd
 
 - name: Enable and start the service
   systemd:
-    name: docker
+    name: containerd
     daemon_reload: True
     state: started
     enabled: True

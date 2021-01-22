@@ -5,7 +5,7 @@
   register: kubeadm_binary
 
 - name: Perform a kubeadm reset
-  shell: "/usr/bin/kubeadm reset --cri-socket={{ docker.socket_path }} --force"
+  shell: "/usr/bin/kubeadm reset --cri-socket={{ containerd.grpc_address }} --force"
   when: kubeadm_binary.stat.exists
 
 - name: Cleanup any unused directories and files
@@ -16,3 +16,6 @@
   - /etc/kubernetes
   - /root/.kube/config
   - /var/lib/etcd
+
+- name: Reset ipvs records
+  shell: "ipvsadm --clear"

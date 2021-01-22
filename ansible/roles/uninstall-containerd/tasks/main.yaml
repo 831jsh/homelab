@@ -1,41 +1,27 @@
 ---
-- name: Disable and stop docker
+- name: Disable and stop containerd
   systemd:
-    name: docker
+    name: containerd
     daemon_reload: True
     state: stopped
     enabled: False
 
-- name: Unlock the docker-ce package
+- name: Unlock the containerd.io package
   dpkg_selections:
-    name: docker-ce
+    name: containerd.io
     selection: purge
 
-- name: Uninstall docker
+- name: Uninstall containerd.io
   apt:
-    name: docker-ce
+    name: containerd.io
     state: absent
-
-- name: Check to see if pip is already installed
-  command: "pip --version"
-  ignore_errors: true
-  changed_when: false
-  check_mode: no
-  register: pip_is_installed
-
-- name: Uninstall docker-py
-  pip:
-    name: docker-py
-    state: absent
-  when: pip_is_installed.rc == 0
 
 - name: Remove previously created files and directories
   file:
     path: "{{ item }}"
     state: absent
   with_items:
-  - /etc/docker
-  - /etc/systemd/system/docker.service.d
+  - /etc/containerd
 
 - name: Remove docker apt repository
   apt_repository:

@@ -17,6 +17,6 @@
   - uninstall-kubelet
   - uninstall-kubernetes-cni
   - uninstall-kubernetes-modules
-  - uninstall-docker
+  - uninstall-containerd
   - uninstall-common-packages
   - remove-kubernetes-repo
