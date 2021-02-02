@@ -103,7 +103,13 @@ oom_score = 0
     [plugins."io.containerd.grpc.v1.cri".registry]
       [plugins."io.containerd.grpc.v1.cri".registry.mirrors]
         [plugins."io.containerd.grpc.v1.cri".registry.mirrors."docker.io"]
-          endpoint = ["https://registry-1.docker.io"]
+          endpoint = ["{{ containerd.mirror.proto }}://{{ containerd.mirror.host }}"]
+        [plugins."io.containerd.grpc.v1.cri".registry.mirrors."{{ containerd.mirror.host }}"]
+          endpoint = ["{{ containerd.mirror.proto }}://{{ containerd.mirror.host }}"]
+{%if containerd.mirror.insecure == true %}
+      [plugins."io.containerd.grpc.v1.cri".registry.configs."{{ containerd.mirror.host }}".tls]
+        insecure_skip_verify = true
+{% endif %}
     [plugins."io.containerd.grpc.v1.cri".image_decryption]
       key_model = ""
     [plugins."io.containerd.grpc.v1.cri".x509_key_pair_streaming]

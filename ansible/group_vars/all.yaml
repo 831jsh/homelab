@@ -3,6 +3,10 @@ networkInterface: ens18
 containerd:
   version: "1.4.3-1"
   grpc_address: /run/containerd/containerd.sock
+  mirror:
+    proto: http
+    host: core.apps.batcave:5000
+    insecure: true
 kubernetes:
   version: "1.20.2"
   auditPolicy:

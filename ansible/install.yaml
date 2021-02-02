@@ -11,27 +11,27 @@
 - hosts: kubernetes_nodes
   become: yes
   roles:
-  - remove-snap
-  - disable-swap
-  - enable-ipv4-forwarding
-  - enable-masquerading
-  - install-common-packages
-  - set-bridge-nf-call-iptables
+  # - remove-snap
+  # - disable-swap
+  # - enable-ipv4-forwarding
+  # - enable-masquerading
+  # - install-common-packages
+  # - set-bridge-nf-call-iptables
   - install-containerd
-  - add-kubernetes-repo
-  - install-kubernetes-cni
-  - install-kubelet
-  - install-kubeadm
-  - install-kubernetes-modules
+  # - add-kubernetes-repo
+  # - install-kubernetes-cni
+  # - install-kubelet
+  # - install-kubeadm
+  # - install-kubernetes-modules
 
-- hosts: masters
-  become: yes
-  roles:
-  - install-kubectl
+# - hosts: masters
+#   become: yes
+#   roles:
+#   - install-kubectl
 
-- hosts: kubernetes_nodes
-  become: yes
-  order: sorted
-  roles:
-  - initialize-kubernetes-nodes
-  - install-calico
+# - hosts: kubernetes_nodes
+#   become: yes
+#   order: sorted
+#   roles:
+#   - initialize-kubernetes-nodes
+#   - install-calico
